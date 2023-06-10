@@ -1,0 +1,112 @@
+import requests
+import tkinter as tk
+from tkinter import ttk
+import datetime
+from tkinter.messagebox import showerror
+
+root = tk.Tk()
+root.title('Pocasie')
+root.geometry('500x110')
+root.resizable(True, True)
+#root.configure(bg='white')
+frame = ttk.Frame(root)
+options = {'padx': 5, 'pady': 5}
+
+error=''
+temp = ''
+sunrise = ''
+sunset = ''
+description = ''
+wind = ''
+s_rise = ''
+s_set = ''
+dt = ''
+date_today = ''
+hum = ''
+city=''
+
+def refresh_weather():
+
+    city = location_entry.get()
+    response = requests.get("https://api.openweathermap.org/data/2.5/weather?q="+city+"&lang=en&units=metric&APPID=66c6bbb0a2b29e787078a631167e0a46")
+    json_data = response.json()
+
+    if json_data['cod'] == 200:
+        temp = round(json_data['main']['temp'],1)
+        sunrise = json_data['sys']['sunrise']
+        sunset = json_data['sys']['sunset']
+        s_rise = (datetime.datetime.fromtimestamp(sunrise))
+        s_set = (datetime.datetime.fromtimestamp(sunset))
+        sk_rise = s_rise.strftime("%H:%M")
+        sk_set = s_set.strftime("%H:%M")
+        description = json_data['weather'][0]['description']
+        wind = round(3.6 * json_data['wind']['speed'],1)
+        dt = json_data['dt']
+        date_today = (datetime.datetime.fromtimestamp(dt))
+        datum_dnes = date_today.strftime('%H:%M, %d.%m.%Y')
+        hum = json_data['main']['humidity']
+        temp_label.config(text=f"{temp} °C")
+        sunrise_time_label.config(text=sk_rise)
+        sunset_time_label.config(text=sk_set)
+        description_label.config(text=description)
+        wind_label.config(text=f'{wind} km/h')
+        date_today_label.config(text=datum_dnes)
+        hum_label.config(text=f'{hum} %')
+        #show_status_label.config(text=f"{city}")
+        print(temp)
+        print(type(temp), type(sunrise), type(sunset), type(description), type(wind))
+        #return temp, s_rise, s_set, description, wind
+
+    else:
+        #show_status_label.config(text=f"City {city} not found.")
+        showerror(title='Error', message=f"City '{city}' not found")
+
+temperature_label = ttk.Label(frame, text='Temperature:', width=20)
+temperature_label.grid(column=0, row=1)
+temp_label = ttk.Label(frame, text=temp, width=20)
+temp_label.grid(column=1, row=1)
+
+wind_label = ttk.Label(frame, text='Wind speed:', width=20)
+wind_label.grid(column=0, row=2)
+wind_label = ttk.Label(frame, text=description, width=20)
+wind_label.grid(column=1, row=2)
+
+sunrise_label = ttk.Label(frame, text='Sunrise:', width=20)
+sunrise_label.grid(column=0, row=3)
+sunrise_time_label = ttk.Label(frame, text=s_rise, width=20)
+sunrise_time_label.grid(column=1, row=3)
+
+description_label = ttk.Label(frame, text='Description:', width=20)
+description_label.grid(column=2, row=1)
+description_label = ttk.Label(frame, text=description, width=20)
+description_label.grid(column=3, row=1)
+
+hum_label = ttk.Label(frame, text='Humidity:', width=20)
+hum_label.grid(column=2, row=2)
+hum_label = ttk.Label(frame, text=hum, width=20)
+hum_label.grid(column=3, row=2)
+
+date_today_label = ttk.Label(frame, text='Date and time:', width=20)
+date_today_label.grid(column=2, row=0)
+date_today_label = ttk.Label(frame, text=date_today, width=20)
+date_today_label.grid(column=3, row=0)
+
+sunset_label = ttk.Label(frame, text='Sunset:', width=20)
+sunset_label.grid(column=2, row=3)
+sunset_time_label = ttk.Label(frame, text=s_set, width=20)
+sunset_time_label.grid(column=3, row=3)
+
+show_status_label = ttk.Label(frame,text=f'{city}', width=20, foreground='red')
+show_status_label.grid(column=0, row=4)
+
+location_entry = ttk.Entry(frame)
+location_entry.grid(column=0, row=0)
+
+refresh_button = tk.Button(frame, text='Refresh')
+refresh_button.grid(column=1, row=0)
+refresh_button.configure(command=refresh_weather)
+
+frame.grid(padx=5, pady=5)
+
+# start the app
+root.mainloop()
